@@ -6,6 +6,12 @@ import (
 )
 
 func TestSqlite(t *testing.T) {
+	t.Cleanup(func() {
+		err := os.Remove("sqlite.db")
+		if err != nil {
+			t.Errorf("unable to remove sqlite.db")
+		}
+	})
 	db := New("sqlite.db")
 	db.With("key string, value string, i integer").
 		Key("key").
@@ -27,10 +33,4 @@ func TestSqlite(t *testing.T) {
 		}
 	}
 
-	t.Cleanup(func() {
-		err := os.Remove("sqlite.db")
-		if err != nil {
-			t.Errorf("unable to remove sqlite.db")
-		}
-	})
 }

@@ -1,8 +1,10 @@
 package util
 
-func Log(v ...interface{}) {
+import "log"
+
+func Log(v ...any) {
 	if v[0] != nil {
-		panic(v)
-		//log.Fatal(v...)
+		log.Println(v...)
+		panic(v[len(v)-1])
 	}
 }
