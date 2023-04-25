@@ -19,7 +19,7 @@ type Stmt struct {
 	cols      []string
 	table     string
 	predicate string
-	params    []string
+	params    []any
 }
 type TblDef struct {
 	db         DS
@@ -64,7 +64,7 @@ func (_tblDef TblDef) CreateTable(table string) {
 		util.Log(err)
 	})
 }
-func (_stmt Stmt) Where(predicate string, params ...string) gorm.Stmt {
+func (_stmt Stmt) Where(predicate string, params ...any) gorm.Stmt {
 	_stmt.predicate = predicate
 	_stmt.params = params
 	return _stmt
@@ -85,12 +85,12 @@ func (_stmt Stmt) Select(cols ...string) *sql.Rows {
 				"from", _stmt.table, where, _stmt.predicate,
 			}, " "))
 		util.Log(err)
-		rows, err = stmt.Query(gorm.GetParams(_stmt.params...)...)
+		rows, err = stmt.Query(_stmt.params...)
 		util.Log(err)
 	})
 	return rows
 }
-func (_stmt Stmt) Update(stmt string, params ...string) sql.Result {
+func (_stmt Stmt) Update(stmt string, params ...any) sql.Result {
 	var result sql.Result
 	_stmt.db.Orm(func(db *sql.DB) {
 		var where string
@@ -102,11 +102,11 @@ func (_stmt Stmt) Update(stmt string, params ...string) sql.Result {
 				"update", _stmt.table, "set", stmt, where, _stmt.predicate,
 			}, " "))
 		util.Log(err)
-		result, err = stmt.Exec(gorm.GetParams(append(params, _stmt.params...)...)...)
+		result, err = stmt.Exec(append(params, _stmt.params...)...)
 	})
 	return result
 }
-func (_stmt Stmt) Replace(values ...string) sql.Result {
+func (_stmt Stmt) Replace(values ...any) sql.Result {
 	var result sql.Result
 	_stmt.db.Orm(func(db *sql.DB) {
 		stmt, err := db.Prepare(
@@ -114,7 +114,7 @@ func (_stmt Stmt) Replace(values ...string) sql.Result {
 				"replace into", _stmt.table, "values", "(", strings.Join(gorm.Qs(len(values)), ","), ")",
 			}, " "))
 		util.Log(err)
-		result, err = stmt.Exec(gorm.GetParams(values...)...)
+		result, err = stmt.Exec(values...)
 		util.Log(err)
 	})
 	return result
@@ -127,7 +127,7 @@ func (_stmt Stmt) Delete() sql.Result {
 				"delete from", _stmt.table, "where", _stmt.predicate,
 			}, " "))
 		util.Log(err)
-		result, err = stmt.Exec(gorm.GetParams(_stmt.params...)...)
+		result, err = stmt.Exec(_stmt.params...)
 		util.Log(err)
 	})
 	return result

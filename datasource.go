@@ -15,10 +15,10 @@ type TblDef interface {
 	CreateTable(table string)
 }
 type Stmt interface {
-	Where(predicate string, params ...string) Stmt
+	Where(predicate string, params ...any) Stmt
 	Select(cols ...string) *sql.Rows
-	Update(stmt string, params ...string) sql.Result
-	Replace(values ...string) sql.Result
+	Update(stmt string, params ...any) sql.Result
+	Replace(values ...any) sql.Result
 	Delete() sql.Result
 }
 
@@ -28,11 +28,4 @@ func Qs(n int) []string {
 		ss[i] = "?"
 	}
 	return ss
-}
-func GetParams(params ...string) []interface{} {
-	all := make([]interface{}, len(params))
-	for i, v := range params {
-		all[i] = v
-	}
-	return all
 }
