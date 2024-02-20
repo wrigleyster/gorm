@@ -16,6 +16,8 @@ type TblDef interface {
 }
 type Stmt interface {
 	Where(predicate string, params ...any) Stmt
+	OrderAscendingBy(col string) Stmt
+	OrderDescendingBy(col string) Stmt
 	Select(cols ...string) *sql.Rows
 	Update(stmt string, params ...any) sql.Result
 	Replace(values ...any) sql.Result
@@ -24,7 +26,7 @@ type Stmt interface {
 
 func Qs(n int) []string {
 	ss := make([]string, n)
-	for i, _ := range ss {
+	for i := range ss {
 		ss[i] = "?"
 	}
 	return ss

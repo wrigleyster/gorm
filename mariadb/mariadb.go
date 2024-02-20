@@ -20,6 +20,7 @@ type Stmt struct {
 	table     string
 	predicate string
 	params    []any
+	sortOrder string
 }
 type TblDef struct {
 	db         DS
@@ -69,6 +70,14 @@ func (_stmt Stmt) Where(predicate string, params ...any) gorm.Stmt {
 	_stmt.params = params
 	return _stmt
 }
+func (_stmt Stmt) OrderAscendingBy(col string) gorm.Stmt {
+	_stmt.sortOrder = "ORDER BY "+col+" ASC"
+	return _stmt
+}
+func (_stmt Stmt) OrderDescendingBy(col string) gorm.Stmt {
+	_stmt.sortOrder = "ORDER BY "+col+" DESC"
+	return _stmt
+}
 func (_stmt Stmt) Select(cols ...string) *sql.Rows {
 	var rows *sql.Rows
 	if len(cols) == 0 {
@@ -83,6 +92,7 @@ func (_stmt Stmt) Select(cols ...string) *sql.Rows {
 			strings.Join([]string{
 				"select", strings.Join(cols, ","),
 				"from", _stmt.table, where, _stmt.predicate,
+				_stmt.sortOrder,
 			}, " "))
 		util.Log(err)
 		rows, err = stmt.Query(_stmt.params...)

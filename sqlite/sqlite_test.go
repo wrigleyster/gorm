@@ -23,6 +23,7 @@ func TestSqlite(t *testing.T) {
 
 	db.From("key_pair").Replace("key001", "val001", 5)
 	res := db.From("key_pair").Where("key = ?", "key001").Select("i")
+    db.From("key_pair").OrderAscendingBy("key").Select()
 	if !res.Next() {
 		t.Error("unable to fetch key")
 	} else {
@@ -32,5 +33,4 @@ func TestSqlite(t *testing.T) {
 			t.Errorf("expected 5, got %d", i)
 		}
 	}
-
 }
