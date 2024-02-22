@@ -15,14 +15,18 @@ type TblDef interface {
 	CreateTable(table string)
 }
 type Stmt interface {
-	Where(predicate string, params ...any) Stmt
 	OrderAscendingBy(col string) Stmt
 	OrderDescendingBy(col string) Stmt
+	InnerJoin(table string, predicate string) Stmt
+	LeftJoin(table string, predicate string) Stmt
+	RightJoin(table string, predicate string) Stmt
+	Where(predicate string, params ...any) Stmt
 	Select(cols ...string) *sql.Rows
 	Update(stmt string, params ...any) sql.Result
 	Replace(values ...any) sql.Result
 	Delete() sql.Result
 }
+
 
 func Qs(n int) []string {
 	ss := make([]string, n)

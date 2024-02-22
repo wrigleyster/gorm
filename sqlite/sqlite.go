@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -16,9 +17,10 @@ type Stmt struct {
 	db        DS
 	cols      []string
 	table     string
-	predicate string
+	where     string
 	params    []any
 	sortOrder string
+	join      string
 }
 
 type TblDef struct {
@@ -63,7 +65,7 @@ func (_tblDef TblDef) Key(primaryKey string) gorm.TblDef {
 	return _tblDef
 }
 func (_stmt Stmt) Where(predicate string, params ...any) gorm.Stmt {
-	_stmt.predicate = predicate
+	_stmt.where = "WHERE " + predicate
 	_stmt.params = params
 	return _stmt
 }
@@ -75,21 +77,28 @@ func (_stmt Stmt) OrderDescendingBy(col string) gorm.Stmt {
 	_stmt.sortOrder = "ORDER BY "+col+" DESC"
 	return _stmt
 }
+func (_stmt Stmt) InnerJoin(table, predicate string) gorm.Stmt {
+	_stmt.join = fmt.Sprintf("INNER JOIN %s ON %s", table, predicate)
+	return _stmt
+}
+func (_stmt Stmt) LeftJoin(table, predicate string) gorm.Stmt {
+	_stmt.join = fmt.Sprintf("LEFT OUTER JOIN %s ON %s", table, predicate)
+	return _stmt
+}
+func (_stmt Stmt) RightJoin(table, predicate string) gorm.Stmt {
+	_stmt.join = fmt.Sprintf("RIGHT OUTER JOIN %s ON %s", table, predicate)
+	return _stmt
+}
 func (_stmt Stmt) Select(cols ...string) *sql.Rows {
 	var rows *sql.Rows
 	if len(cols) == 0 {
 		cols = append(cols, "*")
 	}
 	_stmt.db.Orm(func(db *sql.DB) {
-		var where string
-		if _stmt.predicate != "" {
-			where = "where"
-		}
-
 		stmt, err := db.Prepare(
 			strings.Join([]string{
 				"select", strings.Join(cols, ","),
-				"from", _stmt.table, where, _stmt.predicate,
+				"from", _stmt.table, _stmt.join, _stmt.where,
 				_stmt.sortOrder,
 			}, " "))
 		util.Log(err)
@@ -101,13 +110,9 @@ func (_stmt Stmt) Select(cols ...string) *sql.Rows {
 func (_stmt Stmt) Update(stmt string, params ...any) sql.Result {
 	var result sql.Result
 	_stmt.db.Orm(func(db *sql.DB) {
-		var where string
-		if _stmt.predicate != "" {
-			where = "where"
-		}
 		stmt, err := db.Prepare(
 			strings.Join([]string{
-				"update", _stmt.table, "set", stmt, where, _stmt.predicate,
+				"update", _stmt.table, "set", stmt, _stmt.where,
 			}, " "))
 		util.Log(err)
 		result, err = stmt.Exec(append(params, _stmt.params...)...)
@@ -132,7 +137,7 @@ func (_stmt Stmt) Delete() sql.Result {
 	_stmt.db.Orm(func(db *sql.DB) {
 		stmt, err := db.Prepare(
 			strings.Join([]string{
-				"delete from", _stmt.table, "where", _stmt.predicate,
+				"delete from", _stmt.table, _stmt.where,
 			}, " "))
 		util.Log(err)
 		result, err = stmt.Exec(_stmt.params...)
