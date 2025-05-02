@@ -29,8 +29,8 @@ type TblDef struct {
 	key        string
 }
 
-func New(dbname, host string, port int) gorm.DataSource {
-	return DS{dbname: dbname, host: host, port: port}
+func New(dbname, host string, port int, user, password string) gorm.DataSource {
+	return DS{dbname: dbname, host: host, port: port, user: user, password: password}
 }
 
 func (_ds DS) From(table string) gorm.Stmt {
@@ -67,16 +67,16 @@ func (_tblDef TblDef) CreateTable(table string) {
 	})
 }
 func (_stmt Stmt) Where(predicate string, params ...any) gorm.Stmt {
-	_stmt.where = "WHERE "+predicate
+	_stmt.where = "WHERE " + predicate
 	_stmt.params = params
 	return _stmt
 }
 func (_stmt Stmt) OrderAscendingBy(col string) gorm.Stmt {
-	_stmt.sortOrder = "ORDER BY "+col+" ASC"
+	_stmt.sortOrder = "ORDER BY " + col + " ASC"
 	return _stmt
 }
 func (_stmt Stmt) OrderDescendingBy(col string) gorm.Stmt {
-	_stmt.sortOrder = "ORDER BY "+col+" DESC"
+	_stmt.sortOrder = "ORDER BY " + col + " DESC"
 	return _stmt
 }
 func (_stmt Stmt) InnerJoin(table, predicate string) gorm.Stmt {
